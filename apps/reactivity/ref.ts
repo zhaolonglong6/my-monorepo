@@ -1,32 +1,35 @@
 import { activeEffect } from "./effect";
 
-class Ref {
-    _value:any
-    sub:any
-    constructor(v){
-        this._value = v
-    }
-    
+class RefImpl<T> {
+    _value: T;
+    __is_value=true
+    sub?: () => void;
 
-    get value(){
-        console.log('获取value',activeEffect);
-        if(activeEffect){
-            this.sub = activeEffect
+    constructor(v: T) {
+        this._value = v;
+    }
+
+    get value(): T {
+        if (activeEffect) {
+            this.sub = activeEffect;
         }
-        return this._value
-    }
-    set value(val:any){
-        console.log('设置value',val);
-        
-        this._value = val
-        this.sub && this.sub()
+        return this._value;
     }
 
+    set value(val: T) {
+        this._value = val;
+        this.sub?.();
+    }
 }
 
-const ref = (v:any)=>{
-    return new Ref(v)
+const ref = <T>(v: T): RefImpl<T> => {
+    return new RefImpl(v);
+}
+
+const isRef = <T>(v:RefImpl<T>|undefined)=>{
+    return !!v?.__is_value
 }
 export {
-    ref
+    ref,
+    isRef
 }
