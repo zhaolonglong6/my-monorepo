@@ -1,35 +1,45 @@
-import { activeEffect } from "./effect";
+import { activeEffect } from './effect'
+import { link, propagate, type Dep, type Link } from './system'
 
 class RefImpl<T> {
-    _value: T;
-    __is_value=true
-    sub?: () => void;
+  _value: T
+  __is_value = true
 
-    constructor(v: T) {
-        this._value = v;
-    }
+  subHead?: Link
+  subTail?: Link
 
-    get value(): T {
-        if (activeEffect) {
-            this.sub = activeEffect;
-        }
-        return this._value;
-    }
+  constructor(v: T) {
+    this._value = v
+  }
 
-    set value(val: T) {
-        this._value = val;
-        this.sub?.();
-    }
+  get value(): T {
+    trackRef(this)
+    return this._value
+  }
+
+  set value(val: T) {
+    this._value = val
+    triggerRef(this)
+  }
 }
 
 const ref = <T>(v: T): RefImpl<T> => {
-    return new RefImpl(v);
+  return new RefImpl(v)
 }
 
-const isRef = <T>(v:RefImpl<T>|undefined)=>{
-    return !!v?.__is_value
+const isRef = <T>(v: RefImpl<T> | undefined) => {
+  return !!v?.__is_value
 }
-export {
-    ref,
-    isRef
+
+// 依赖追踪
+export const trackRef = (dep: Dep) => {
+  if (activeEffect) {
+    link(dep,activeEffect)
+  }
 }
+
+// 依赖触发
+export const triggerRef = (dep: Dep) => {
+    propagate(dep.subHead as Link)
+}
+export { ref, isRef }

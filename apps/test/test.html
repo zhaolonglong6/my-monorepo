@@ -1,52 +1,30 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Document</title>
-</head>
-<body>
-    
+  </head>
+  <body>
     <script type="module">
-        import { ref,effect,isRef } from '../reactivity/dist/index.js';
-        
-        
-        const count = ref(0)
-        
-        effect(
-            ()=>{
-                effect(()=>console.log('内层变化',count.value))
-                return console.log('外层变化了',count.value)}
-        )
-        
-        setTimeout(()=>{
-            count.value++
-        },1000)
+      import { ref, effect, isRef } from '../reactivity/dist/index.js'
 
-        const node = {value:1,next:undefined}
-        const node1 = {value:2,next:undefined}
-        const node2= {value:3,next:undefined}
-        const node3 = {value:4,next:undefined}
-        let head = node
-        node.next = node1
-        node1.next = node2
-        node2.next = node3
-        // console.log(head);
-        
-        let cur = {next:head}
-        let y = cur
-        while(y){
-            if(y.next === node2){
-                y.next = node2.next
-                break
-            }
-            y = y.next
-
+      const count = ref(0)
+      
+      const effect1 = effect(() => {
+        effect(() => console.log('effect2内层变化', count.value))
+        console.log('effect1外层变化了', count.value)
+      },{
+        scheduler:()=>{
+          console.log("scheduler");
+          
         }
-        head = cur.next
-        console.log(head);
-        
-        
+      })
+
+      setTimeout(() => {
+        count.value++
+      }, 1000)
+      
     </script>
-</body>
+  </body>
 </html>
